@@ -1,0 +1,42 @@
+# Ignorar ambientes virtuais
+venv/
+.env/
+env/
+.venv/
+
+# Ignorar arquivos de cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Ignorar arquivos de log
+*.log
+
+# Ignorar diretórios de compilação
+build/
+dist/
+*.egg-info/
+
+# Ignorar arquivos do PyCharm
+.idea/
+
+# Ignorar arquivos de configuração do VSCode
+.vscode/
+
+# Ignorar arquivos de configuração do Eclipse
+.project
+.pydevproject
+
+# Ignorar arquivos de banco de dados do SQLite
+*.sqlite3
+
+# Ignorar arquivos de configuração do Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Ignorar arquivos temporários do sistema operacional
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
