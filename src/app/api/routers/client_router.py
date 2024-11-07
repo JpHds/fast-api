@@ -3,10 +3,11 @@ from pydantic import BaseModel
 from typing import List
 
 from sqlalchemy.orm import Session
-from src.app.models.client_model import Status
+
 from src.app.core.dependencies import get_db
 from src.app.core.jwt_handler import is_super_admin, is_admin_or_super_admin
-from src.app.services.client_service import ClientService
+from src.app.models.client import Status
+from src.app.services.client import ClientService
 
 router = APIRouter()
 
@@ -19,7 +20,7 @@ class ClientResponse(BaseModel):
     status: Status
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ClientRequest(BaseModel):

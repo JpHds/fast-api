@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 from src.app.core.hashing import hash_password
 from src.app.core.jwt_handler import create_access_token, get_current_user, authenticate_admin, \
-    verify_super_admin_token, authenticate_super_admin, is_super_admin
+    authenticate_super_admin, is_super_admin
 from src.app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from src.app.models.admin_model import Admin
+from fastapi.security import OAuth2PasswordRequestForm
+
 from src.app.core.dependencies import get_db
-from src.app.models.superadmin_model import SuperAdmin
+from src.app.models.admin import Admin
+from src.app.models.superadmin import SuperAdmin
 
 router = APIRouter()
 

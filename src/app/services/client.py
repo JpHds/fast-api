@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
 
-from src.app.models.client_model import Client
+
 from src.app.core.exceptions import ClientNotFoundException
+from src.app.models.client import Client
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 

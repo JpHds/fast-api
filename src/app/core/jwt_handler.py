@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
@@ -8,17 +8,16 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from src.app.core.hashing import verify_password
-from src.app.models.admin_model import Admin
-from src.app.models.superadmin_model import SuperAdmin
+from src.app.models.admin import Admin
+from src.app.models.superadmin import SuperAdmin
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 

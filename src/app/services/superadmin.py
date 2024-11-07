@@ -1,10 +1,10 @@
-# src/app/services/admin_service.py
-
 from sqlalchemy.orm import Session
 from src.app.core.hashing import hash_password
-from src.app.models.superadmin_model import SuperAdmin
+
 import os
 from dotenv import load_dotenv
+
+from src.app.models.superadmin import SuperAdmin
 
 load_dotenv()
 
