@@ -36,7 +36,6 @@ def create_access_token(data: dict, secret_key: str, algorithm: str = "HS256",
     return encoded_jwt
 
 
-# Função para recriar o banco de dados para cada teste
 def recreateTableToTesting():
     Base.metadata.drop_all(bind=engineTest)
     Base.metadata.create_all(bind=engineTest)
@@ -50,7 +49,6 @@ app.dependency_overrides[get_db] = override_get_db
 app.dependency_overrides[get_current_user] = override_get_current_user
 
 
-# Teste de criação de cliente com autenticação JWT
 def test_create_client():
     recreateTableToTesting()
 
@@ -201,7 +199,6 @@ def test_update_client():
 
     client_id = response_create.json()['id']
 
-    # Dados para atualização do cliente (verifique se estão corretos de acordo com o modelo)
     updated_client_data = {
         'username': 'Lucas Updated',
         'email': '<EMAIL>',
@@ -218,7 +215,7 @@ def test_update_client():
     assert updated_client['phone'] == updated_client_data['phone']
     assert updated_client['status'] == updated_client_data['status']
 
-    response_not_found = client.put("/clientes/999", json=updated_client_data, headers=headers)  # ID que não existe
+    response_not_found = client.put("/clientes/999", json=updated_client_data, headers=headers)
     assert response_not_found.status_code == 404
 
 

@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 from typing import Optional
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from fastapi import HTTPException, Depends
 from src.app.core.config import SECRET_KEY, ALGORITHM
-from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from src.app.models.admin_model import Admin
@@ -11,7 +11,6 @@ from src.app.models.admin_model import Admin
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -37,18 +36,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return payload
 
 
-def authenticate_admin(db: Session, username: str, password: str):
+def authenticate_admin(db: Session, username: str, password: str) -> Optional[Admin]:
     admin = db.query(Admin).filter(Admin.username == username).first()
-    if admin is None:
-        return False
-    if not pwd_context.verify(password, admin.password):
-        return False
-    return admin
+    if admin and verify_password(password, admin.password):
+        return admin
+    return None
 
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
-
-
-def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
