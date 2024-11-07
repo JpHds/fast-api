@@ -62,32 +62,32 @@ def list_clients(db: Session = Depends(get_db),
 
 
 # READ - Buscar cliente específico
-@router.get("/{id_do_cliente}", response_model=ClientResponse)
-def get_client_by_id(id_do_cliente: int, db: Session = Depends(get_db),
+@router.get("/{client_id}", response_model=ClientResponse)
+def get_client_by_id(client_id: int, db: Session = Depends(get_db),
                      current_user: dict = Depends(get_current_user)):
-    existing_client = db.query(Client).filter(Client.id == id_do_cliente).first()
+    existing_client = db.query(Client).filter(Client.id == client_id).first()
     if not existing_client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
     return existing_client
 
 
 # UPDATE - Editar cliente existente
-@router.put("/{id_do_cliente}", response_model=ClientResponse)
-def update_client(id_do_cliente: int, client_data: ClientRequest, db: Session = Depends(get_db),
+@router.put("/{client_id}", response_model=ClientResponse)
+def update_client(client_id: int, client_data: ClientRequest, db: Session = Depends(get_db),
                   current_user: dict = Depends(get_current_user)):
-    existing_client = db.query(Client).get(id_do_cliente)
+    existing_client = db.query(Client).get(client_id)
 
     if not existing_client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
 
-    updated_client = client_data.username
-    updated_client.phone = client_data.phone
-    updated_client.status = client_data.status
+    existing_client.username = client_data.username
+    existing_client.phone = client_data.phone
+    existing_client.status = client_data.status
 
-    db.add(updated_client)
     db.commit()
-    db.refresh(updated_client)
-    return updated_client
+    db.refresh(existing_client)
+
+    return existing_client
 
 
 # DELETE - Excluir cliente
