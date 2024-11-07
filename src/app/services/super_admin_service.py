@@ -6,7 +6,6 @@ from src.app.models.superadmin_model import SuperAdmin
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 SUPER_ADMIN_EMAIL = os.getenv("SUPER_ADMIN_EMAIL")

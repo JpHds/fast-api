@@ -8,6 +8,7 @@ from src.app.core.exceptions import ClientNotFoundException
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
+
 class ClientService:
     @staticmethod
     def create_client(db: Session, client_data: dict) -> Client:

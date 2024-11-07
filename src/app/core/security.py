@@ -29,6 +29,7 @@ class AdminCreatedResponse(BaseModel):
     class Config:
         from_attributes = True
 
+
 @router.post("/create-admin", summary="Registrar um novo admin", response_model=AdminCreatedResponse, status_code=201)
 def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db),
                  current_super_admin: SuperAdmin = Depends(is_super_admin)):
