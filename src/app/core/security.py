@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from src.app.core.hashing import hash_password
 from src.app.core.jwt_handler import create_access_token, get_current_user, authenticate_admin, \
-    verify_super_admin_token, authenticate_super_admin
+    verify_super_admin_token, authenticate_super_admin, is_super_admin
 from src.app.core.config import ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from src.app.models.admin_model import Admin
@@ -31,7 +31,7 @@ class AdminCreatedResponse(BaseModel):
 
 @router.post("/create-admin", summary="Registrar um novo admin", response_model=AdminCreatedResponse, status_code=201)
 def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db),
-                 current_super_admin: SuperAdmin = Depends(get_current_user)):
+                 current_super_admin: SuperAdmin = Depends(is_super_admin)):
     admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
     if admin_in_db:
         raise HTTPException(status_code=400, detail="Email já registrado")
