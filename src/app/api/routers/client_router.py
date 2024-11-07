@@ -5,7 +5,7 @@ from typing import List
 from sqlalchemy.orm import Session
 from src.app.models.client_model import Status
 from src.app.core.dependencies import get_db
-from src.app.core.jwt_handler import get_current_user, is_super_admin, is_admin_or_super_admin
+from src.app.core.jwt_handler import is_super_admin, is_admin_or_super_admin
 from src.app.services.client_service import ClientService
 
 router = APIRouter()

@@ -22,28 +22,28 @@ class ClientService:
             db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Erro ao criar cliente: {str(e)}"
+                detail=f"Error creating client: {str(e)}"
             )
 
     @staticmethod
     def get_all_clients(db: Session) -> list[Client]:
         clients = db.query(Client).all()
         if not clients:
-            raise ClientNotFoundException("Nenhum cliente encontrado.")
+            raise ClientNotFoundException("No clients found.")
         return clients
 
     @staticmethod
     def get_client_by_id(db: Session, client_id: int) -> Client:
         client = db.query(Client).filter(Client.id == client_id).first()
         if not client:
-            raise ClientNotFoundException("Cliente não encontrado.")
+            raise ClientNotFoundException("Client not found.")
         return client
 
     @staticmethod
     def update_client_by_id(db: Session, client_id: int, client_data: dict) -> Client:
         client = db.query(Client).get(client_id)
         if not client:
-            raise ClientNotFoundException("Cliente não encontrado.")
+            raise ClientNotFoundException("Client not found")
 
         for key, value in client_data.items():
             setattr(client, key, value)
@@ -56,7 +56,7 @@ class ClientService:
     def delete_client_by_id(db: Session, client_id: int) -> None:
         client = db.query(Client).get(client_id)
         if not client:
-            raise ClientNotFoundException("Cliente não encontrado.")
+            raise ClientNotFoundException("Client not found.")
 
         db.delete(client)
         db.commit()

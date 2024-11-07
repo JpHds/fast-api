@@ -4,9 +4,9 @@ from enum import Enum
 
 
 class Status(Enum):
-    ATIVO = "ativo"
-    INATIVO = "inativo"
-    SUSPENSO = "suspenso"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    SUSPENDED = "suspended"
 
     def __str__(self):
         return self.value.capitalize()
@@ -19,4 +19,4 @@ class Client(Base):
     email = Column(String, unique=True, nullable=False)
     username = Column(String(20), unique=True, nullable=False)
     phone = Column(String(15), nullable=False)
-    status = Column(SQLAlchemyEnum(Status), nullable=False, default=Status.ATIVO)
+    status = Column(SQLAlchemyEnum(Status), nullable=False, default=Status.ACTIVE)

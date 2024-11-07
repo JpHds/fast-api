@@ -10,7 +10,7 @@ DB_NAME = os.getenv("POSTGRES_DB")
 DB_HOST = os.getenv("POSTGRES_HOST")
 DB_PORT = os.getenv("POSTGRES_PORT")
 
-environment_type = os.getenv("ENVIRONMENT_TYPE")
+ENVIRONMENT_TYPE = os.getenv("ENVIRONMENT_TYPE")
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")

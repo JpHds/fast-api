@@ -3,14 +3,13 @@ from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from fastapi import HTTPException, Depends
-from src.app.core.config import SECRET_KEY, ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES
+from src.app.core.config import SECRET_KEY, ALGORITHM
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
 from src.app.core.hashing import verify_password
 from src.app.models.admin_model import Admin
 from src.app.models.superadmin_model import SuperAdmin
-from src.app.services.super_admin_service import SUPER_ADMIN_USERNAME
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
@@ -31,7 +30,7 @@ def verify_token(token: str):
     except JWTError:
         raise HTTPException(
             status_code=401,
-            detail="Token inválido ou expirado",
+            detail="Invalid or expired token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -43,7 +42,7 @@ def verify_super_admin_token(token: str):
     except JWTError:
         raise HTTPException(
             status_code=401,
-            detail="Token inválido ou expirado",
+            detail="Invalid or expired token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -57,7 +56,7 @@ def is_admin(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "admin":
         raise HTTPException(
             status_code=403,
-            detail="Acesso negado. Apenas admins têm permissão para acessar este recurso."
+            detail="Access denied. Only administrators are allowed to access this resource."
         )
     return current_user
 
@@ -66,7 +65,7 @@ def is_super_admin(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "super_admin":
         raise HTTPException(
             status_code=403,
-            detail="Acesso negado. Apenas super admins têm permissão para acessar este recurso."
+            detail="Access denied. Only super admins are allowed to access this resource."
         )
     return current_user
 
@@ -75,7 +74,7 @@ def is_admin_or_super_admin(current_user: dict = Depends(get_current_user)):
     if current_user["role"] not in ["admin", "super_admin"]:
         raise HTTPException(
             status_code=403,
-            detail="Acesso negado. Apenas admins e superadmins têm permissão para acessar este recurso."
+            detail="Access denied. Only admins and super admins are allowed to access this resource."
         )
     return current_user
 

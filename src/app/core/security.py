@@ -30,12 +30,12 @@ class AdminCreatedResponse(BaseModel):
         from_attributes = True
 
 
-@router.post("/create-admin", summary="Registrar um novo admin", response_model=AdminCreatedResponse, status_code=201)
+@router.post("/create-admin", summary="Register a new admin", response_model=AdminCreatedResponse, status_code=201)
 def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db),
                  current_super_admin: SuperAdmin = Depends(is_super_admin)):
     admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
     if admin_in_db:
-        raise HTTPException(status_code=400, detail="Email já registrado")
+        raise HTTPException(status_code=400, detail="Email already registered.")
 
     hashed_password = hash_password(create_admin_request.password)
 
@@ -49,7 +49,7 @@ def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends
     return new_admin
 
 
-@router.post("/token", summary="Endpoint de autenticação para obter o token JWT")
+@router.post("/token", summary="Authentication endpoint to get the JWT token.")
 async def login(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db)):
@@ -73,11 +73,11 @@ async def login(
 
     raise HTTPException(
         status_code=401,
-        detail="Usuário ou senha incorretos",
+        detail="Incorrect username or password.",
         headers={"WWW-Authenticate": "Bearer"},
     )
 
 
-@router.get("/users/me", summary="Obter informações do usuário atual")
+@router.get("/users/me", summary="Get current user information")
 async def get_current_admin(current_user: dict = Depends(get_current_user)):
     return {"user": current_user}
