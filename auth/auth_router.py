@@ -56,6 +56,7 @@ async def login(
 
     admin_dict = {"sub": admin.nome}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    
     access_token = create_access_token(
         data=admin_dict, expires_delta=access_token_expires
     )

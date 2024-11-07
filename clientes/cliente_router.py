@@ -28,6 +28,22 @@ class ClienteRequest(BaseModel):
     telefone: str
     status: Status
 
+# CREATE - Cadastrar um novo cliente
+@router.post("/", response_model=ClienteResponse, status_code=201)
+def cadastrar_cliente(cliente_request: ClienteRequest, db: Session = Depends(get_db)):
+
+    try:
+        cliente = Cliente(**cliente_request.dict())
+        db.add(cliente)
+        db.commit()
+        db.refresh(cliente)
+        return cliente
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Erro ao criar cliente: {str(e)}"
+        )
 
 # READ - Listar todos os clientes
 @router.get("/", response_model=List[ClienteResponse])
@@ -48,22 +64,6 @@ def buscar_cliente(id_do_cliente: int, db: Session = Depends(get_db)):
     return cliente
 
 
-# CREATE - Cadastrar um novo cliente
-@router.post("/", response_model=ClienteResponse, status_code=201)
-def cadastrar_cliente(cliente_request: ClienteRequest, db: Session = Depends(get_db)):
-
-    try:
-        cliente = Cliente(**cliente_request.dict())
-        db.add(cliente)
-        db.commit()
-        db.refresh(cliente)
-        return cliente
-    except SQLAlchemyError as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Erro ao criar cliente: {str(e)}"
-        )
 
 # UPDATE - Editar cliente existente
 @router.put("/{id_do_cliente}", response_model=ClienteResponse)
