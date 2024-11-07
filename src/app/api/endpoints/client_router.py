@@ -38,7 +38,7 @@ def create_client(client_data: ClientRequest,
 
 @router.get("/list-clients", response_model=List[ClientResponse])
 def list_clients(db: Session = Depends(get_db),
-                 current_user: dict = Depends(is_admin_or_super_admin())):
+                 current_user: dict = Depends(is_admin_or_super_admin)):
     return ClientService.get_all_clients(db)
 
 
@@ -50,7 +50,7 @@ def get_client_by_id(client_id: int, db: Session = Depends(get_db),
 
 @router.put("/{client_id}", response_model=ClientResponse)
 def update_client_by_id(client_id: int, client_data: ClientRequest, db: Session = Depends(get_db),
-                        current_user: dict = Depends(is_super_admin())):
+                        current_user: dict = Depends(is_super_admin)):
     return ClientService.update_client_by_id(db, client_id, client_data.dict())
 
 
