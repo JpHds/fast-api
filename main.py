@@ -9,7 +9,7 @@ from src.app.core.dependencies import get_db
 from src.app.db.database import engine, Base
 from src.app.services.super_admin_service import create_super_admin
 
-if config.environment_type == 'development':
+if config.ENVIRONMENT_TYPE == 'development':
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
