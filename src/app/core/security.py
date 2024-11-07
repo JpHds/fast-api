@@ -15,37 +15,39 @@ router = APIRouter()
 
 class CreateAdminRequest(BaseModel):
     email: str
-    nome: str
-    senha: str
+    username: str
+    password: str
 
 
 class AdminCreatedResponse(BaseModel):
     id: int
     email: str
-    nome: str
+    username: str
 
     class Config:
         orm_mode = True
 
 
 @router.post("/create-admin", summary="Registrar um novo admin", response_model=AdminCreatedResponse, status_code=201)
-def criar_admin(create_admin_data: CreateAdminRequest, db: Session = Depends(get_db)):
-    existing_admin = db.query(Admin).filter(Admin.email == create_admin_data.email).first()
-    if existing_admin:
+def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db)):
+    admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
+    if admin_in_db:
         raise HTTPException(status_code=400, detail="Username already registered")
 
-    hashed_password = hash_password(create_admin_data.senha)
+    hashed_password = hash_password(create_admin_request.password)
 
-    created_admin = Admin(email= create_admin_data.email, nome=create_admin_data.nome, senha=hashed_password)
+    new_admin = Admin(email=create_admin_request.email, username=create_admin_request.username,
+                      password=hashed_password)
 
-    db.add(created_admin)
+    db.add(new_admin)
     db.commit()
-    db.refresh(created_admin)
+    db.refresh(new_admin)
 
-    return created_admin
+    return new_admin
+
 
 @router.post("/token", summary="Endpoint de autenticação para obter o token JWT")
-async def generate_admin_token(
+async def login_admin(
         form_data: OAuth2PasswordRequestForm = Depends(),
         db: Session = Depends(get_db)):
     admin = authenticate_admin(db, form_data.username, form_data.password)
@@ -56,11 +58,11 @@ async def generate_admin_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    token_data = {"sub": admin.nome}
+    jwt_claims = {"sub": admin.username}
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     access_token = create_access_token(
-        data=token_data, expires_delta=access_token_expires
+        data=jwt_claims, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

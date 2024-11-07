@@ -12,11 +12,13 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
 
 def verify_token(token: str):
     try:
@@ -29,24 +31,24 @@ def verify_token(token: str):
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+
 def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = verify_token(token)
     return payload
 
-def authenticate_admin(db: Session, email: str, senha: str):
-    admin = db.query(Admin).filter(Admin.email == email).first()
+
+def authenticate_admin(db: Session, username: str, password: str):
+    admin = db.query(Admin).filter(Admin.username == username).first()
     if admin is None:
-        print('auth')
         return False
-    if not pwd_context.verify(senha, admin.senha):
-        print('auth')
+    if not pwd_context.verify(password, admin.password):
         return False
-    print('auth')
     return admin
 
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)

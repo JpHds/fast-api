@@ -7,39 +7,42 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from starlette import status
 
-from src.app.models.cliente_model import Cliente
-from src.app.models.cliente_model import Status
+from src.app.models.client_model import Client
+from src.app.models.client_model import Status
 from src.app.core.dependencies import get_db
 from src.app.core.jwt_handler import get_current_user
 
 router = APIRouter()
 
 
-class ClienteResponse(BaseModel):
+class ClientResponse(BaseModel):
     id: int
-    nome: str
-    telefone: str
+    email: str
+    username: str
+    phone: str
     status: Status
 
     class Config:
         orm_mode = True
 
 
-class ClienteRequest(BaseModel):
-    nome: str
-    telefone: str
+class ClientRequest(BaseModel):
+    username: str
+    email: str
+    phone: str
     status: Status
 
 
 # CREATE - Cadastrar um novo cliente
-@router.post("/", response_model=ClienteResponse, status_code=201)
-def cadastrar_cliente(cliente_request: ClienteRequest, db: Session = Depends(get_db)):
+@router.post("/create-client", response_model=ClientResponse, status_code=201)
+def create_client(client_data: ClientRequest, db: Session = Depends(get_db),
+                  current_user: dict = Depends(get_current_user)):
     try:
-        cliente = Cliente(**cliente_request.dict())
-        db.add(cliente)
+        new_client = Client(**client_data.dict())
+        db.add(new_client)
         db.commit()
-        db.refresh(cliente)
-        return cliente
+        db.refresh(new_client)
+        return new_client
     except SQLAlchemyError as e:
         db.rollback()
         raise HTTPException(
@@ -49,48 +52,54 @@ def cadastrar_cliente(cliente_request: ClienteRequest, db: Session = Depends(get
 
 
 # READ - Listar todos os clientes
-@router.get("/", response_model=List[ClienteResponse])
-def listar_clientes(db: Session = Depends(get_db),
-                    current_user: dict = Depends(get_current_user)):
-    clientes = db.query(Cliente).all()
+@router.get("/list_clients", response_model=List[ClientResponse])
+def list_clients(db: Session = Depends(get_db),
+                 current_user: dict = Depends(get_current_user)):
+    clientes = db.query(Client).all()
     if not clientes:
         raise HTTPException(status_code=404, detail="Nenhum cliente encontrado.")
     return clientes
 
 
 # READ - Buscar cliente específico
-@router.get("/{id_do_cliente}", response_model=ClienteResponse)
-def buscar_cliente(id_do_cliente: int, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).filter(Cliente.id == id_do_cliente).first()
-    if not cliente:
+@router.get("/{id_do_cliente}", response_model=ClientResponse)
+def get_client_by_id(id_do_cliente: int, db: Session = Depends(get_db),
+                     current_user: dict = Depends(get_current_user)):
+    existing_client = db.query(Client).filter(Client.id == id_do_cliente).first()
+    if not existing_client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
-    return cliente
+    return existing_client
 
 
 # UPDATE - Editar cliente existente
-@router.put("/{id_do_cliente}", response_model=ClienteResponse)
-def editar_cliente(id_do_cliente: int, cliente_request: ClienteRequest, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).get(id_do_cliente)
+@router.put("/{id_do_cliente}", response_model=ClientResponse)
+def update_client(id_do_cliente: int, client_data: ClientRequest, db: Session = Depends(get_db),
+                  current_user: dict = Depends(get_current_user)):
+    existing_client = db.query(Client).get(id_do_cliente)
 
-    if not cliente:
+    if not existing_client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
 
-    cliente.nome = cliente_request.nome
-    cliente.telefone = cliente_request.telefone
-    cliente.status = cliente_request.status
+    updated_client = client_data.username
+    updated_client.phone = client_data.phone
+    updated_client.status = client_data.status
 
-    db.add(cliente)
+    db.add(updated_client)
     db.commit()
-    db.refresh(cliente)
-    return cliente
+    db.refresh(updated_client)
+    return updated_client
 
 
 # DELETE - Excluir cliente
-@router.delete("/{id_do_cliente}", status_code=204)
-def excluir_cliente(id_do_cliente: int, db: Session = Depends(get_db)):
-    cliente = db.query(Cliente).get(id_do_cliente)
-    if not cliente:
+@router.delete("/{client_id}", status_code=204)
+def delete_client(client_id: int, db: Session = Depends(get_db),
+                  current_user: dict = Depends(get_current_user)):
+    client = db.query(Client).get(client_id)
+
+    if not client:
         raise HTTPException(status_code=404, detail="Cliente não encontrado.")
 
-    db.delete(cliente)
+    db.delete(client)
     db.commit()
+
+    return {"detail": "Cliente excluído com sucesso."}
