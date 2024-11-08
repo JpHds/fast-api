@@ -1,7 +1,8 @@
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import Session
 
+from src.app.core.exceptions import NotFound
 from src.app.db.database import Base
-
 
 class Admin(Base):
     __tablename__ = 'admins'

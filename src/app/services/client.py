@@ -1,39 +1,52 @@
+from typing import Optional
+
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
 
-from src.app.core.exceptions import ClientNotFoundException
+from src.app.core.exceptions import NotFound
 from src.app.models.client import Client, Status
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="security/token")
 
 
 class ClientService:
+
     @staticmethod
-    def validate_client_data(client_data: dict, db: Session):
-        exceptions_list = []
+    def validate_client_data(client_data: dict, client_id: Optional[id], db: Session):
+        validation_errors = []
 
-        # Verificar se o email já está registrado
-        client_in_db = db.query(Client).filter(Client.email == client_data["email"]).first()
-        if client_in_db:
-            exceptions_list.append("Email already registered.")
-
-        # Verificar se o username já está registrado
-        client_in_db = db.query(Client).filter(Client.username == client_data["username"]).first()
-        if client_in_db:
-            exceptions_list.append("Username already taken.")
-
-        # Verificar se o telefone é muito longo
-        if len(client_data["phone"]) > 15:
-            exceptions_list.append("Phone too long.")
-
-        if exceptions_list:
-            print(exceptions_list)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="; ".join(exceptions_list)
+        client_to_create = db.query(Client).filter(
+            or_(
+                Client.username == client_data['username'],
+                Client.email == client_data['email']
             )
+        ).first()
+
+        if client_to_create is not None:
+            validation_errors.append("User with this credentials already registered.")
+
+        if client_id is None:
+            if client_to_create is None:
+                db.query(Client).add
+        else:
+            client_with_email_in_db = db.query(Client).filter(Client.email == client_data["email"]).first()
+
+            if client_with_email_in_db and client_with_email_in_db.id != client_id:
+                validation_errors.append("Email already registered.")
+
+            client_with_username_in_db = db.query(Client).filter(Client.username == client_data["username"]).first()
+
+            if client_with_username_in_db and client_with_username_in_db.id != client_id:
+                validation_errors.append("Username already taken.")
+
+            if validation_errors:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="; ".join(validation_errors)
+                )
 
     @staticmethod
     def create_client(db: Session, client_data: dict) -> Client:
@@ -55,22 +68,24 @@ class ClientService:
     def get_all_clients(db: Session) -> list[Client]:
         clients = db.query(Client).all()
         if not clients:
-            raise ClientNotFoundException("No clients found.")
+            raise NotFound("No clients found.")
         return clients
 
     @staticmethod
     def get_client_by_id(db: Session, client_id: int) -> Client:
         client = db.query(Client).filter(Client.id == client_id).first()
         if not client:
-            raise ClientNotFoundException("Client not found.")
+            raise NotFound("Client not found.")
         return client
 
     @staticmethod
     def update_client_by_id(db: Session, client_id: int, client_data: dict) -> Client:
-        ClientService.validate_client_data(client_data, db)
+
         client = db.query(Client).get(client_id)
         if not client:
-            raise ClientNotFoundException("Client not found")
+            raise NotFound("Client not found")
+
+        ClientService.validate_client_data(client_data, client_id, db)
 
         for key, value in client_data.items():
             setattr(client, key, value)
@@ -83,7 +98,7 @@ class ClientService:
     def delete_client_by_id(db: Session, client_id: int) -> None:
         client = db.query(Client).get(client_id)
         if not client:
-            raise ClientNotFoundException("Client not found.")
+            raise NotFound("Client not found.")
 
         db.delete(client)
         db.commit()

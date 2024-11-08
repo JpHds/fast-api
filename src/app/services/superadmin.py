@@ -1,9 +1,12 @@
 from sqlalchemy.orm import Session
+
+from src.app.core.exceptions import NotFound
 from src.app.core.hashing import hash_password
 
 import os
 from dotenv import load_dotenv
 
+from src.app.models.admin import Admin
 from src.app.models.superadmin import SuperAdmin
 
 load_dotenv()

@@ -1,7 +1,9 @@
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
+from starlette import status
 
 from src.app.core.hashing import hash_password
 from src.app.core.jwt_handler import create_access_token, get_current_user, authenticate_admin, \
@@ -31,13 +33,29 @@ class AdminCreatedResponse(BaseModel):
         from_attributes = True
 
 
+@staticmethod
+def validate_admin_create(admin_data: dict, admin_id: int, db: Session):
+    admin_to_create = db.query(Admin).filter(
+        or_(
+            Admin.username == admin_data['username'],
+            Admin.email == admin_data['email']
+        )
+    ).first()
+
+    if admin_to_create is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Admin with this credentials already registered."
+        )
+
+
 @router.post("/create-admin", summary="Register a new admin", response_model=AdminCreatedResponse, status_code=201)
 def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db),
                  current_super_admin: SuperAdmin = Depends(is_super_admin)):
     admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
     if admin_in_db:
         raise HTTPException(status_code=400, detail="Email already registered.")
-    
+
     admin_in_db = db.query(Admin).filter(Admin.username == create_admin_request.username).first()
     if admin_in_db:
         raise HTTPException(status_code=400, detail="Username already taken.")
