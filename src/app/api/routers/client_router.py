@@ -14,8 +14,8 @@ router = APIRouter()
 
 class ClientResponse(BaseModel):
     id: int
-    email: str
     username: str
+    email: str
     phone: str
     status: Status
 
