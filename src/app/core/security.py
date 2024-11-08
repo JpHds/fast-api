@@ -1,7 +1,9 @@
 from datetime import timedelta
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import or_
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from starlette import status
 
@@ -18,13 +20,13 @@ from src.app.models.superadmin import SuperAdmin
 router = APIRouter()
 
 
-class CreateAdminRequest(BaseModel):
+class AdminRequest(BaseModel):
     email: str
     username: str
     password: str
 
 
-class AdminCreatedResponse(BaseModel):
+class AdminResponse(BaseModel):
     id: int
     email: str
     username: str
@@ -33,36 +35,44 @@ class AdminCreatedResponse(BaseModel):
         from_attributes = True
 
 
-@staticmethod
-def validate_admin_create(admin_data: dict, admin_id: int, db: Session):
+def validate_admin_data(admin_data: dict, admin_id: Optional[id], db: Session):
+    validation_errors = []
+
     admin_to_create = db.query(Admin).filter(
-        or_(
+        and_(
             Admin.username == admin_data['username'],
             Admin.email == admin_data['email']
         )
     ).first()
-
     if admin_to_create is not None:
+        validation_errors.append("User with this credentials already registered.")
+
+    else:
+        admin_with_email_in_db = db.query(Admin).filter(Admin.email == admin_data["email"]).first()
+
+        if admin_with_email_in_db and admin_with_email_in_db.id != admin_id:
+            validation_errors.append("Email already registered.")
+
+        admin_with_username_in_db = db.query(Admin).filter(Admin.username == admin_data["username"]).first()
+
+        if admin_with_username_in_db and admin_with_username_in_db.id != admin_id:
+            validation_errors.append("Username already taken.")
+
+    if validation_errors:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Admin with this credentials already registered."
+            detail="; ".join(validation_errors)
         )
 
 
-@router.post("/create-admin", summary="Register a new admin", response_model=AdminCreatedResponse, status_code=201)
-def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends(get_db),
+@router.post("/create-admin", summary="Register a new admin", response_model=AdminResponse, status_code=201)
+def create_admin(create_admin_request: dict, db: Session = Depends(get_db),
                  current_super_admin: SuperAdmin = Depends(is_super_admin)):
-    admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
-    if admin_in_db:
-        raise HTTPException(status_code=400, detail="Email already registered.")
+    validate_admin_data(create_admin_request, None, db)
 
-    admin_in_db = db.query(Admin).filter(Admin.username == create_admin_request.username).first()
-    if admin_in_db:
-        raise HTTPException(status_code=400, detail="Username already taken.")
+    hashed_password = hash_password(create_admin_request["password"])
 
-    hashed_password = hash_password(create_admin_request.password)
-
-    new_admin = Admin(email=create_admin_request.email, username=create_admin_request.username,
+    new_admin = Admin(email=create_admin_request["email"], username=create_admin_request["username"],
                       password=hashed_password)
 
     db.add(new_admin)
