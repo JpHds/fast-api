@@ -68,12 +68,12 @@ Certifique-se de ter o **Git**, **Python** e **Docker** (caso opte por usá-lo) 
 
 ## Instruções para Windows
 
-1. **Crie um arquivo `.env`** na raiz do projeto e configure-o baseado no arquivo `.env.example`.
-
-2. **Clone o repositório**:
+1. **Clone o repositório**:
 
    ```cmd
    git clone https://github.com/JpHds/fast-api.git
+
+2. **Crie um arquivo `.env`** na raiz do projeto e configure-o baseado no arquivo `.env.example`.
 
 3. **Acesse o diretório do projeto**:
 
@@ -107,18 +107,20 @@ Certifique-se de ter o **Git**, **Python** e **Docker** (caso opte por usá-lo) 
     ```console
     cd fast-api
 
-3. **Crie e ative um ambiente virtual**:
+3. **Crie um arquivo `.env`** na raiz do projeto e configure-o baseado no arquivo `.env.example`.
+   
+4. **Crie e ative um ambiente virtual**:
 
     ```cmd
     python3 -m venv env
     source env/bin/activate
 
-4. **Instale as dependências necessárias**:
+5. **Instale as dependências necessárias**:
 
     ```cmd
     pip install -r requirements.txt
 
-5. **Execute o script principal**:
+6. **Execute o script principal**:
 
     ```cmd
     python main.py
