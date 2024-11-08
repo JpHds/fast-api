@@ -29,6 +29,7 @@ Este é um projeto de exemplo usando FastAPI. Abaixo estão as instruções para
 -  **Permissões**:
     - Criar **admins**.
     - Atualizar e excluir **clientes**.
+    - Atualizar e excluir **admins**.
     - Tem todas as permissões de um **admin**.
 
 2. **Admin**
