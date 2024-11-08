@@ -37,6 +37,10 @@ def create_admin(create_admin_request: CreateAdminRequest, db: Session = Depends
     admin_in_db = db.query(Admin).filter(Admin.email == create_admin_request.email).first()
     if admin_in_db:
         raise HTTPException(status_code=400, detail="Email already registered.")
+    
+    admin_in_db = db.query(Admin).filter(Admin.username == create_admin_request.username).first()
+    if admin_in_db:
+        raise HTTPException(status_code=400, detail="Username already taken.")
 
     hashed_password = hash_password(create_admin_request.password)
 

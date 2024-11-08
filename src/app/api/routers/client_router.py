@@ -29,7 +29,6 @@ class ClientRequest(BaseModel):
     phone: str
     status: Status
 
-
 @router.post("/create-client", response_model=ClientResponse, status_code=status.HTTP_201_CREATED)
 def create_client(client_data: ClientRequest,
                   db: Session = Depends(get_db),
